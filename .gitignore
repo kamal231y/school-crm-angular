@@ -1,0 +1,16 @@
+# Logs & uploads
+api/storage/*.log
+api/storage/uploads/*
+!api/storage/uploads/.gitkeep
+
+# Environment / local settings
+.env
+.env.local
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

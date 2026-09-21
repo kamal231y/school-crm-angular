@@ -1,0 +1,92 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Mark attendance</h1>
+      <p>Everyone starts as present. Change only the ones who aren't.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field">
+          <label for="ac">Class</label>
+          <select id="ac" ng-model="vm.filters.class_id" ng-change="vm.load()"
+                  ng-options="c.id as c.label for c in vm.classes"></select>
+        </div>
+        <div class="field">
+          <label for="ad">Date</label>
+          <input id="ad" type="date" ng-model="vm.filters.date" max="{{vm.maxDate}}" ng-change="vm.load()">
+        </div>
+        <div class="field" style="flex:1"></div>
+        <div class="field" style="min-width:auto">
+          <label style="display:flex; align-items:center; gap:.4rem; font-weight:400">
+            <input type="checkbox" ng-model="vm.notify" style="width:auto">
+            Text parents of absent students
+          </label>
+        </div>
+      </div>
+
+      <div class="alert info" ng-if="vm.marked" style="margin-top:.9rem">
+        Attendance for this date is already saved. Saving again will update it.
+      </div>
+    </div>
+
+    <div class="loading" ng-if="vm.loading">Loading the class list…</div>
+
+    <div class="table-scroll" ng-if="!vm.loading && vm.rows.length">
+      <table class="register">
+        <thead>
+          <tr>
+            <th class="roll">Roll</th>
+            <th>Student</th>
+            <th>Admission no.</th>
+            <th style="width:340px">
+              Attendance
+              <span style="font-weight:400; margin-left:.6rem">
+                <button class="btn-link" type="button" ng-click="vm.setAll('present')">all present</button> ·
+                <button class="btn-link" type="button" ng-click="vm.setAll('holiday')">holiday</button>
+              </span>
+            </th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="r in vm.rows">
+            <td class="roll">{{ r.roll_no || '–' }}</td>
+            <td class="student-link">{{ r.name }}</td>
+            <td class="muted">{{ r.admission_no }}</td>
+            <td>
+              <div class="mark-group">
+                <label ng-repeat="opt in ['present','absent','late','leave']"
+                       ng-class="{'on-present': r.status=='present' && opt=='present',
+                                  'on-absent':  r.status=='absent'  && opt=='absent',
+                                  'on-late':    r.status=='late'    && opt=='late',
+                                  'on-leave':   r.status=='leave'   && opt=='leave'}">
+                  <input type="radio" ng-model="r.status" ng-value="opt" name="att{{r.student_id}}">
+                  <span>{{ opt | titlecase }}</span>
+                </label>
+              </div>
+            </td>
+            <td><input type="text" ng-model="r.remarks" placeholder="optional"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-body" ng-if="!vm.loading && !vm.rows.length">
+      <p class="muted">No students on roll in this class yet. Record an admission first.</p>
+    </div>
+
+    <div class="panel-body" ng-if="vm.rows.length"
+         style="border-top:1px solid var(--rule); display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap">
+      <span class="muted">
+        {{ vm.count('present') }} present · {{ vm.count('absent') }} absent ·
+        {{ vm.count('late') }} late · {{ vm.count('leave') }} on leave
+      </span>
+      <button class="btn" ng-click="vm.save()" ng-disabled="vm.busy">
+        {{ vm.busy ? 'Saving…' : 'Save attendance' }}
+      </button>
+    </div>
+  </div>
+</div>

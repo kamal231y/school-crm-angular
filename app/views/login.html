@@ -1,0 +1,39 @@
+<div class="login-wrap">
+  <section class="login-art">
+    <div class="rule-stack"><div></div><div></div><div></div><div></div></div>
+    <h1>The school register,<br>without the register.</h1>
+    <p>Admissions, daily attendance, fee receipts, report cards and parent SMS — one place, one login, and a record of everything the office did today.</p>
+  </section>
+
+  <section class="login-form">
+    <div class="box">
+      <h2>Sign in</h2>
+      <p>Use the account your school office gave you.</p>
+
+      <div class="alert error" ng-if="vm.error">{{ vm.error }}</div>
+
+      <form ng-submit="vm.submit()" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" ng-model="vm.creds.email" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="pwd">Password</label>
+          <input id="pwd" type="password" ng-model="vm.creds.password" autocomplete="current-password" required>
+        </div>
+        <button class="btn" type="submit" ng-disabled="vm.busy">
+          {{ vm.busy ? 'Signing in…' : 'Sign in' }}
+        </button>
+      </form>
+
+      <div class="demo-note">
+        Demo accounts (password <code>admin123</code>):
+        <div style="margin-top:.35rem">
+          <button class="btn-link" type="button" ng-click="vm.useDemo('admin@school.test')">admin@school.test</button> ·
+          <button class="btn-link" type="button" ng-click="vm.useDemo('teacher@school.test')">teacher@school.test</button> ·
+          <button class="btn-link" type="button" ng-click="vm.useDemo('accounts@school.test')">accounts@school.test</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

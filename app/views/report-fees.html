@@ -1,0 +1,62 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Fee collection</h1>
+      <p>{{ vm.filters.from | date:'dd MMM yyyy' }} to {{ vm.filters.to | date:'dd MMM yyyy' }}</p>
+    </div>
+    <div style="display:flex; gap:.5rem" class="no-print">
+      <button class="btn ghost" ng-click="vm.exportCsv()">Download CSV</button>
+      <button class="btn ghost" ng-click="vm.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="panel no-print">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field"><label for="frf">From</label><input id="frf" type="date" ng-model="vm.filters.from"></div>
+        <div class="field"><label for="frt">To</label><input id="frt" type="date" ng-model="vm.filters.to"></div>
+        <button class="btn" ng-click="vm.load()">Run report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-strip" ng-if="vm.rows">
+    <div class="stat good">
+      <div class="val">{{ vm.total | rupee }}</div>
+      <div class="lbl">Total collected</div>
+      <div class="sub">{{ vm.rows.length }} receipts</div>
+    </div>
+    <div class="stat" ng-repeat="m in vm.byMode">
+      <div class="val">{{ m.total | rupee }}</div>
+      <div class="lbl">{{ m.mode | uppercase }}</div>
+      <div class="sub">{{ m.count }} payments</div>
+    </div>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Building the report…</div>
+
+  <div class="panel" ng-if="!vm.loading">
+    <div class="table-scroll">
+      <table class="register">
+        <thead>
+          <tr><th>Receipt</th><th>Date</th><th>Student</th><th>Class</th><th>Fee head</th>
+              <th>Mode</th><th>Reference</th><th>Received by</th><th class="num">Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="r in vm.rows">
+            <td class="muted">{{ r.receipt_no }}</td>
+            <td>{{ r.paid_on | date:'dd MMM yyyy' }}</td>
+            <td class="student-link">{{ r.student_name }}</td>
+            <td>{{ r.class_name }}</td>
+            <td>{{ r.title }}</td>
+            <td>{{ r.mode | uppercase }}</td>
+            <td class="muted">{{ r.txn_ref || '—' }}</td>
+            <td class="muted">{{ r.received_by_name }}</td>
+            <td class="num">{{ r.amount | rupee }}</td>
+          </tr>
+          <tr class="empty" ng-if="!vm.rows.length"><td colspan="9">No payments recorded in this period.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

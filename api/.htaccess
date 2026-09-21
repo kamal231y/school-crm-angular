@@ -1,0 +1,14 @@
+# /api me pretty URLs: /api/students  ->  /api/index.php/students
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+
+# Authorization header ko PHP tak pahunchao (kuch servers ise drop kar dete hain)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Config aur storage ko browser se block karo
+<FilesMatch "\.(log|sql)$">
+  Require all denied
+</FilesMatch>

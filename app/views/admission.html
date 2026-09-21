@@ -1,0 +1,100 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>New admission</h1>
+      <p>Saving this creates the admission number, the first fee invoices, and sends a confirmation SMS to the guardian.</p>
+    </div>
+  </div>
+
+  <div class="alert success" ng-if="vm.saved">
+    Admission {{ vm.saved.admission_no }} saved.
+    <button class="btn-link" ng-click="vm.openStudent()">Open the student record</button>
+  </div>
+
+  <div class="panel">
+    <header><h3>Student details</h3></header>
+    <div class="panel-body">
+      <form ng-submit="vm.save()" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="fn">First name</label>
+            <input id="fn" type="text" ng-model="vm.form.first_name" ng-class="{err: vm.errors.first_name}">
+            <span class="err-text" ng-if="vm.errors.first_name">{{ vm.errors.first_name }}</span>
+          </div>
+          <div class="field">
+            <label for="ln">Last name</label>
+            <input id="ln" type="text" ng-model="vm.form.last_name">
+          </div>
+          <div class="field">
+            <label for="gn">Gender</label>
+            <select id="gn" ng-model="vm.form.gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="db">Date of birth</label>
+            <input id="db" type="date" ng-model="vm.form.dob" ng-class="{err: vm.errors.dob}">
+          </div>
+          <div class="field">
+            <label for="cl">Class</label>
+            <select id="cl" ng-model="vm.form.class_id" ng-class="{err: vm.errors.class_id}">
+              <option value="">Choose a class</option>
+              <option ng-repeat="c in vm.classes" value="{{c.id}}">{{ c.label }}</option>
+            </select>
+            <span class="err-text" ng-if="vm.errors.class_id">{{ vm.errors.class_id }}</span>
+          </div>
+          <div class="field">
+            <label for="rl">Roll number</label>
+            <input id="rl" type="text" ng-model="vm.form.roll_no">
+          </div>
+          <div class="field">
+            <label for="ad">Admission date</label>
+            <input id="ad" type="date" ng-model="vm.form.admission_date" ng-class="{err: vm.errors.admission_date}">
+          </div>
+          <div class="field">
+            <label for="ct">Category</label>
+            <input id="ct" type="text" ng-model="vm.form.category" placeholder="General / OBC / SC / ST">
+          </div>
+        </div>
+
+        <h3 style="margin-top:1.6rem">Parent and contact</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="fa">Father's name</label>
+            <input id="fa" type="text" ng-model="vm.form.father_name" ng-class="{err: vm.errors.father_name}">
+            <span class="err-text" ng-if="vm.errors.father_name">{{ vm.errors.father_name }}</span>
+          </div>
+          <div class="field">
+            <label for="mo">Mother's name</label>
+            <input id="mo" type="text" ng-model="vm.form.mother_name">
+          </div>
+          <div class="field">
+            <label for="ph">Guardian mobile</label>
+            <input id="ph" type="text" ng-model="vm.form.guardian_phone" ng-class="{err: vm.errors.guardian_phone}"
+                   placeholder="10-digit number">
+            <span class="hint">All school SMS goes to this number.</span>
+            <span class="err-text" ng-if="vm.errors.guardian_phone">{{ vm.errors.guardian_phone }}</span>
+          </div>
+          <div class="field">
+            <label for="em">Email</label>
+            <input id="em" type="email" ng-model="vm.form.email" ng-class="{err: vm.errors.email}">
+            <span class="err-text" ng-if="vm.errors.email">{{ vm.errors.email }}</span>
+          </div>
+          <div class="field wide">
+            <label for="ar">Address</label>
+            <textarea id="ar" ng-model="vm.form.address" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" ng-disabled="vm.busy">
+            {{ vm.busy ? 'Saving…' : 'Save admission' }}
+          </button>
+          <span class="muted">Admission number is generated automatically.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

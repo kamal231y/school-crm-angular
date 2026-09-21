@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="schoolApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sunrise School CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body ng-controller="ShellCtrl as shell">
+
+  <!-- Login screen: no app chrome -->
+  <div ng-if="!shell.auth.isLoggedIn()" ng-view></div>
+
+  <!-- Signed-in shell -->
+  <div class="shell" ng-if="shell.auth.isLoggedIn()">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>{{ shell.auth.school || 'School CRM' }}</strong>
+        <span>Session {{ shell.auth.session }}</span>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-group">Daily work</div>
+        <a href="#!/dashboard"   ng-class="{active: shell.isActive('/dashboard')}"><span class="ico">▦</span> Dashboard</a>
+        <a href="#!/attendance"  ng-class="{active: shell.isActive('/attendance')}"><span class="ico">✓</span> Mark attendance</a>
+        <a href="#!/fees"        ng-class="{active: shell.isActive('/fees')}"><span class="ico">₹</span> Fees &amp; receipts</a>
+        <a href="#!/sms"         ng-class="{active: shell.isActive('/sms')}"><span class="ico">✉</span> Send SMS</a>
+
+        <div class="nav-group">Students</div>
+        <a href="#!/students"    ng-class="{active: shell.isActive('/students')}"><span class="ico">☰</span> All students</a>
+        <a href="#!/admission"   ng-class="{active: shell.isActive('/admission')}"><span class="ico">＋</span> New admission</a>
+
+        <div class="nav-group">Exams</div>
+        <a href="#!/exams"       ng-class="{active: shell.isActive('/exams')}"><span class="ico">✎</span> Exams &amp; marks</a>
+        <a href="#!/report-card" ng-class="{active: shell.isActive('/report-card')}"><span class="ico">▤</span> Report cards</a>
+
+        <div class="nav-group">Reports</div>
+        <a href="#!/reports/students"   ng-class="{active: shell.isActive('/reports/students')}"><span class="ico">▸</span> Student report</a>
+        <a href="#!/reports/attendance" ng-class="{active: shell.isActive('/reports/attendance')}"><span class="ico">▸</span> Attendance report</a>
+        <a href="#!/reports/fees"       ng-class="{active: shell.isActive('/reports/fees')}"><span class="ico">▸</span> Fee collection</a>
+      </nav>
+
+      <div class="sign-out">
+        <button type="button" ng-click="shell.logout()">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <span class="session-chip">{{ shell.today | date:'EEEE, dd MMM yyyy' }}</span>
+        <div class="who">
+          <b>{{ shell.auth.user.name }}</b>
+          {{ shell.auth.user.role | titlecase }}
+        </div>
+      </header>
+      <div ng-view></div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack">
+    <div class="toast" ng-repeat="t in shell.toast.items" ng-class="t.type">{{ t.text }}</div>
+  </div>
+
+  <script src="js/lib/angular.min.js"></script>
+  <script src="js/lib/angular-route.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/services/api.js"></script>
+  <script src="js/services/auth.js"></script>
+  <script src="js/services/toast.js"></script>
+  <script src="js/controllers/auth.js"></script>
+  <script src="js/controllers/dashboard.js"></script>
+  <script src="js/controllers/students.js"></script>
+  <script src="js/controllers/attendance.js"></script>
+  <script src="js/controllers/fees.js"></script>
+  <script src="js/controllers/exams.js"></script>
+  <script src="js/controllers/sms.js"></script>
+  <script src="js/controllers/reports.js"></script>
+</body>
+</html>

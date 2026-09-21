@@ -1,0 +1,90 @@
+<div class="page">
+  <div class="page-head no-print">
+    <div>
+      <h1>Report card</h1>
+      <p>Pick a class, a student and an exam.</p>
+    </div>
+    <button class="btn" ng-if="vm.card" ng-click="vm.print()">Print report card</button>
+  </div>
+
+  <div class="panel no-print">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field">
+          <label for="rcc">Class</label>
+          <select id="rcc" ng-model="vm.pick.class_id" ng-change="vm.onClass()"
+                  ng-options="c.id as c.label for c in vm.classes">
+            <option value="">Choose a class</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="rcs">Student</label>
+          <select id="rcs" ng-model="vm.pick.student_id" ng-disabled="!vm.students.length">
+            <option value="">Choose a student</option>
+            <option ng-repeat="s in vm.students" value="{{s.id}}">{{ s.roll_no }} · {{ s.first_name }} {{ s.last_name }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rce">Exam</label>
+          <select id="rce" ng-model="vm.pick.exam_id" ng-disabled="!vm.exams.length">
+            <option value="">Choose an exam</option>
+            <option ng-repeat="e in vm.exams" value="{{e.id}}">{{ e.name }}</option>
+          </select>
+        </div>
+        <button class="btn" ng-click="vm.generate()">Show report card</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Building the report card…</div>
+
+  <div class="doc" ng-if="vm.card">
+    <div class="doc-head">
+      <h2>{{ vm.card.school.name }}</h2>
+      <div class="addr">{{ vm.card.school.address }}</div>
+      <div class="kind">{{ vm.card.exam.name }} · Session {{ vm.card.exam.session }}</div>
+    </div>
+
+    <dl>
+      <dt>Student</dt><dd>{{ vm.card.student.first_name }} {{ vm.card.student.last_name }}</dd>
+      <dt>Admission no.</dt><dd>{{ vm.card.student.admission_no }}</dd>
+      <dt>Class</dt><dd>{{ vm.card.student.class_name }}</dd>
+      <dt>Roll no.</dt><dd>{{ vm.card.student.roll_no || '—' }}</dd>
+      <dt>Father</dt><dd>{{ vm.card.student.father_name }}</dd>
+      <dt>Date of birth</dt><dd>{{ vm.card.student.dob | date:'dd MMM yyyy' }}</dd>
+    </dl>
+
+    <table class="register">
+      <thead>
+        <tr><th>Subject</th><th class="num">Max</th><th class="num">Obtained</th><th class="num">Grade</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="s in vm.card.subjects">
+          <td>{{ s.name }}</td>
+          <td class="num">{{ s.max_marks }}</td>
+          <td class="num">{{ s.obtained }}</td>
+          <td class="num">{{ s.grade }}</td>
+          <td><span class="tag" ng-class="s.result | lowercase">{{ s.result }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="amount-line">
+      <span>Total {{ vm.card.summary.obtained }} / {{ vm.card.summary.total_max }}</span>
+      <span>{{ vm.card.summary.percentage }}% · Grade {{ vm.card.summary.grade }}</span>
+    </div>
+
+    <dl>
+      <dt>Result</dt><dd>{{ vm.card.summary.result }}</dd>
+      <dt>Class rank</dt><dd>{{ vm.card.summary.rank || '—' }} of {{ vm.card.summary.out_of }}</dd>
+      <dt>Attendance</dt><dd>{{ vm.card.summary.attendance }}%</dd>
+      <dt>Issued on</dt><dd>{{ vm.today | date:'dd MMM yyyy' }}</dd>
+    </dl>
+
+    <div class="sign-row">
+      <div>Class teacher</div>
+      <div>Parent / guardian</div>
+      <div>Principal</div>
+    </div>
+  </div>
+</div>

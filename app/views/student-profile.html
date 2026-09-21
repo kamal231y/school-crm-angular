@@ -1,0 +1,131 @@
+<div class="page">
+  <div class="loading" ng-if="vm.loading">Loading student…</div>
+  <div class="alert error" ng-if="vm.error">{{ vm.error }}</div>
+
+  <div ng-if="vm.student">
+    <div class="page-head">
+      <div>
+        <h1>{{ vm.student.first_name }} {{ vm.student.last_name }}</h1>
+        <p>{{ vm.student.admission_no }} · {{ vm.student.class_name || 'No class assigned' }} ·
+           <span class="tag" ng-class="vm.student.status">{{ vm.student.status }}</span></p>
+      </div>
+      <div style="display:flex; gap:.5rem">
+        <button class="btn ghost" ng-click="vm.goFees()">Fee history</button>
+        <button class="btn ghost" ng-click="vm.goReportCard()">Report card</button>
+        <button class="btn" ng-if="!vm.editing" ng-click="vm.editing = true">Edit details</button>
+      </div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat" ng-class="{good: vm.attendance.percentage >= 85, bad: vm.attendance.percentage < 75}">
+        <div class="val">{{ vm.attendance.percentage | pct }}</div>
+        <div class="lbl">Attendance</div>
+        <div class="sub">{{ vm.attendance.present }} present of {{ vm.attendance.total }} days</div>
+      </div>
+      <div class="stat bad" ng-if="vm.attendance.absent">
+        <div class="val">{{ vm.attendance.absent }}</div>
+        <div class="lbl">Days absent</div>
+      </div>
+      <div class="stat">
+        <div class="val">{{ vm.fees.paid | rupee }}</div>
+        <div class="lbl">Fees paid</div>
+        <div class="sub">of {{ vm.fees.billed | rupee }} billed</div>
+      </div>
+      <div class="stat" ng-class="{attn: vm.fees.balance > 0, good: vm.fees.balance <= 0}">
+        <div class="val">{{ vm.fees.balance | rupee }}</div>
+        <div class="lbl">{{ vm.fees.balance > 0 ? 'Outstanding' : 'Nothing due' }}</div>
+      </div>
+    </div>
+
+    <!-- Read view -->
+    <div class="panel" ng-if="!vm.editing">
+      <header><h3>Record</h3></header>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div><div class="muted">Father</div><div>{{ vm.student.father_name || '—' }}</div></div>
+          <div><div class="muted">Mother</div><div>{{ vm.student.mother_name || '—' }}</div></div>
+          <div><div class="muted">Guardian mobile</div><div>{{ vm.student.guardian_phone }}</div></div>
+          <div><div class="muted">Email</div><div>{{ vm.student.email || '—' }}</div></div>
+          <div><div class="muted">Date of birth</div><div>{{ (vm.student.dob | date:'dd MMM yyyy') || '—' }}</div></div>
+          <div><div class="muted">Gender</div><div>{{ vm.student.gender | titlecase }}</div></div>
+          <div><div class="muted">Roll number</div><div>{{ vm.student.roll_no || '—' }}</div></div>
+          <div><div class="muted">Admitted on</div><div>{{ vm.student.admission_date | date:'dd MMM yyyy' }}</div></div>
+          <div class="field wide"><div class="muted">Address</div><div>{{ vm.student.address || '—' }}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit view -->
+    <div class="panel" ng-if="vm.editing">
+      <header><h3>Edit record</h3></header>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="field"><label>First name</label><input type="text" ng-model="vm.draft.first_name" ng-class="{err: vm.errors.first_name}"></div>
+          <div class="field"><label>Last name</label><input type="text" ng-model="vm.draft.last_name"></div>
+          <div class="field"><label>Roll number</label><input type="text" ng-model="vm.draft.roll_no"></div>
+          <div class="field">
+            <label>Class</label>
+            <select ng-model="vm.draft.class_id" ng-options="c.id as c.label for c in vm.classes"></select>
+          </div>
+          <div class="field"><label>Father's name</label><input type="text" ng-model="vm.draft.father_name"></div>
+          <div class="field"><label>Mother's name</label><input type="text" ng-model="vm.draft.mother_name"></div>
+          <div class="field">
+            <label>Guardian mobile</label>
+            <input type="text" ng-model="vm.draft.guardian_phone" ng-class="{err: vm.errors.guardian_phone}">
+            <span class="err-text" ng-if="vm.errors.guardian_phone">{{ vm.errors.guardian_phone }}</span>
+          </div>
+          <div class="field"><label>Email</label><input type="email" ng-model="vm.draft.email"></div>
+          <div class="field">
+            <label>Status</label>
+            <select ng-model="vm.draft.status">
+              <option value="active">On roll</option>
+              <option value="left">Left</option>
+              <option value="alumni">Alumni</option>
+            </select>
+          </div>
+          <div class="field wide"><label>Address</label><textarea ng-model="vm.draft.address" rows="2"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn" ng-click="vm.save()">Save changes</button>
+          <button class="btn ghost" ng-click="vm.cancel()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header><h3>Exam history</h3></header>
+      <div class="table-scroll">
+        <table class="register">
+          <thead><tr><th>Exam</th><th>Date</th><th class="num">Marks</th><th class="num">Percentage</th><th>Published</th></tr></thead>
+          <tbody>
+            <tr ng-repeat="e in vm.exams">
+              <td>{{ e.name }}</td>
+              <td>{{ e.exam_date | date:'dd MMM yyyy' }}</td>
+              <td class="num">{{ e.obtained }} / {{ e.total }}</td>
+              <td class="num">{{ (e.obtained / e.total * 100) | number:1 }}%</td>
+              <td><span class="tag" ng-class="e.published == 1 ? 'paid' : 'left'">{{ e.published == 1 ? 'Published' : 'Draft' }}</span></td>
+            </tr>
+            <tr class="empty" ng-if="!vm.exams.length"><td colspan="5">No marks recorded for this student yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header><h3>Recent SMS to guardian</h3></header>
+      <div class="table-scroll">
+        <table class="register">
+          <thead><tr><th>Sent</th><th>Message</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr ng-repeat="m in vm.sms">
+              <td style="white-space:nowrap">{{ m.created_at | date:'dd MMM, HH:mm' }}</td>
+              <td>{{ m.message }}</td>
+              <td><span class="tag" ng-class="m.status">{{ m.status }}</span></td>
+            </tr>
+            <tr class="empty" ng-if="!vm.sms.length"><td colspan="3">No messages sent to this guardian yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

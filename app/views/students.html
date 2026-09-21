@@ -1,0 +1,81 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Students</h1>
+      <p>Search by name, admission number, father's name or phone.</p>
+    </div>
+    <a class="btn" href="#!/admission">New admission</a>
+  </div>
+
+  <div class="panel">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field grow">
+          <label for="q">Search</label>
+          <input id="q" type="search" ng-model="vm.filters.search" ng-change="vm.load(1)"
+                 ng-model-options="{debounce: 350}" placeholder="Aarav, ADM2026001, 98100…">
+        </div>
+        <div class="field">
+          <label for="fc">Class</label>
+          <select id="fc" ng-model="vm.filters.class_id" ng-change="vm.load(1)">
+            <option value="">All classes</option>
+            <option ng-repeat="c in vm.classes" value="{{c.id}}">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fs">Status</label>
+          <select id="fs" ng-model="vm.filters.status" ng-change="vm.load(1)">
+            <option value="active">On roll</option>
+            <option value="left">Left</option>
+            <option value="alumni">Alumni</option>
+            <option value="">Any</option>
+          </select>
+        </div>
+        <button class="btn ghost" type="button" ng-click="vm.reset()">Clear</button>
+      </div>
+    </div>
+
+    <div class="loading" ng-if="vm.loading">Loading students…</div>
+
+    <div class="table-scroll" ng-if="!vm.loading">
+      <table class="register">
+        <thead>
+          <tr>
+            <th class="roll">Roll</th>
+            <th>Name</th>
+            <th>Admission no.</th>
+            <th>Class</th>
+            <th>Father</th>
+            <th>Guardian phone</th>
+            <th>Admitted</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="s in vm.rows" style="cursor:pointer" ng-click="vm.open(s.id)">
+            <td class="roll">{{ s.roll_no || '–' }}</td>
+            <td class="student-link">{{ s.first_name }} {{ s.last_name }}</td>
+            <td>{{ s.admission_no }}</td>
+            <td>{{ s.class_name || '—' }}</td>
+            <td>{{ s.father_name }}</td>
+            <td>{{ s.guardian_phone }}</td>
+            <td>{{ s.admission_date | date:'dd MMM yyyy' }}</td>
+            <td><span class="tag" ng-class="s.status">{{ s.status }}</span></td>
+          </tr>
+          <tr class="empty" ng-if="!vm.rows.length">
+            <td colspan="8">No students match this search. Try clearing the filters, or record a new admission.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-body" ng-if="vm.meta.total_pages > 1"
+         style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--rule)">
+      <span class="muted">{{ vm.meta.total }} students · page {{ vm.meta.page }} of {{ vm.meta.total_pages }}</span>
+      <span>
+        <button class="btn ghost sm" ng-disabled="vm.meta.page <= 1" ng-click="vm.load(vm.meta.page - 1)">Previous</button>
+        <button class="btn ghost sm" ng-disabled="vm.meta.page >= vm.meta.total_pages" ng-click="vm.load(vm.meta.page + 1)">Next</button>
+      </span>
+    </div>
+  </div>
+</div>

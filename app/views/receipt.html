@@ -1,0 +1,59 @@
+<div class="page">
+  <div class="page-head no-print">
+    <div>
+      <h1>Fee receipt</h1>
+      <p>Print this, or send it home with the student.</p>
+    </div>
+    <div style="display:flex; gap:.5rem">
+      <a class="btn ghost" href="#!/fees">Back to fees</a>
+      <button class="btn" ng-click="vm.print()">Print receipt</button>
+    </div>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Loading receipt…</div>
+  <div class="alert error" ng-if="vm.error">{{ vm.error }}</div>
+
+  <div class="doc" ng-if="vm.r">
+    <div class="doc-head">
+      <h2>{{ vm.r.school_name }}</h2>
+      <div class="addr">{{ vm.r.school_address }}</div>
+      <div class="kind">Fee receipt {{ vm.r.receipt_no }}</div>
+    </div>
+
+    <dl>
+      <dt>Student</dt><dd>{{ vm.r.student_name }}</dd>
+      <dt>Admission no.</dt><dd>{{ vm.r.admission_no }}</dd>
+      <dt>Class</dt><dd>{{ vm.r.class_name }}</dd>
+      <dt>Father</dt><dd>{{ vm.r.father_name }}</dd>
+      <dt>Received on</dt><dd>{{ vm.r.paid_on | date:'dd MMM yyyy' }}</dd>
+      <dt>Mode</dt><dd>{{ vm.r.mode | uppercase }}<span ng-if="vm.r.txn_ref"> · {{ vm.r.txn_ref }}</span></dd>
+    </dl>
+
+    <table class="register">
+      <thead><tr><th>Particulars</th><th>Period</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>{{ vm.r.title }} <span class="muted">({{ vm.r.invoice_no }})</span></td>
+          <td>{{ vm.r.period }}</td>
+          <td class="num">{{ vm.r.amount | rupee }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="amount-line">
+      <span>Amount received</span>
+      <span>{{ vm.r.amount | rupee }}</span>
+    </div>
+
+    <p class="muted" ng-if="vm.r.invoice_status != 'paid'">
+      Balance still outstanding on this invoice:
+      {{ (vm.r.invoice_amount - vm.r.discount - vm.r.paid_amount) | rupee }}
+    </p>
+    <p class="muted" ng-if="vm.r.invoice_status == 'paid'">This invoice is now fully paid.</p>
+
+    <div class="sign-row">
+      <div>Received by {{ vm.r.received_by_name }}</div>
+      <div>Authorised signatory</div>
+    </div>
+  </div>
+</div>

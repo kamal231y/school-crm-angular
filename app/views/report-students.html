@@ -1,0 +1,78 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Student report</h1>
+      <p ng-if="vm.count">{{ vm.count }} students · generated {{ vm.generatedAt }}</p>
+    </div>
+    <div style="display:flex; gap:.5rem" class="no-print">
+      <button class="btn ghost" ng-click="vm.exportCsv()">Download CSV</button>
+      <button class="btn ghost" ng-click="vm.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="panel no-print">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field">
+          <label for="src">Class</label>
+          <select id="src" ng-model="vm.filters.class_id">
+            <option value="">All classes</option>
+            <option ng-repeat="c in vm.classes" value="{{c.id}}">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="srg">Gender</label>
+          <select id="srg" ng-model="vm.filters.gender">
+            <option value="">Any</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="srs">Status</label>
+          <select id="srs" ng-model="vm.filters.status">
+            <option value="active">On roll</option>
+            <option value="left">Left</option>
+            <option value="alumni">Alumni</option>
+            <option value="">Any</option>
+          </select>
+        </div>
+        <div class="field"><label for="srf">Admitted from</label><input id="srf" type="date" ng-model="vm.filters.from"></div>
+        <div class="field"><label for="srt">Admitted to</label><input id="srt" type="date" ng-model="vm.filters.to"></div>
+        <button class="btn" ng-click="vm.load()">Run report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Building the report…</div>
+
+  <div class="panel" ng-if="!vm.loading">
+    <div class="table-scroll">
+      <table class="register">
+        <thead>
+          <tr>
+            <th class="roll">Roll</th><th>Admission no.</th><th>Name</th><th>Class</th>
+            <th>Gender</th><th>Father</th><th>Phone</th><th>Admitted</th>
+            <th class="num">Attendance</th><th class="num">Fee due</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="r in vm.rows">
+            <td class="roll">{{ r.roll_no || '–' }}</td>
+            <td>{{ r.admission_no }}</td>
+            <td class="student-link"><a href="#!/students/{{r.id}}">{{ r.name }}</a></td>
+            <td>{{ r.class_name }}</td>
+            <td>{{ r.gender | titlecase }}</td>
+            <td>{{ r.father_name }}</td>
+            <td>{{ r.guardian_phone }}</td>
+            <td>{{ r.admission_date | date:'dd MMM yyyy' }}</td>
+            <td class="num">{{ r.attendance_pct || 0 }}%</td>
+            <td class="num" ng-style="{color: r.fee_due > 0 ? 'var(--brick)' : ''}">{{ r.fee_due | rupee }}</td>
+          </tr>
+          <tr class="empty" ng-if="!vm.rows.length"><td colspan="10">No students match these filters.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

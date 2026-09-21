@@ -1,0 +1,77 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Good day, {{ vm.user.name.split(' ')[0] }}</h1>
+      <p>Here is where the school stands as of {{ vm.today | date:'dd MMM yyyy' }}.</p>
+    </div>
+    <a class="btn" href="#!/attendance">Mark today's attendance</a>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Loading your numbers…</div>
+  <div class="alert error" ng-if="vm.error">{{ vm.error }}</div>
+
+  <div ng-if="vm.data">
+    <div class="stat-strip">
+      <div class="stat">
+        <div class="val">{{ vm.data.students.active }}</div>
+        <div class="lbl">Students on roll</div>
+        <div class="sub">{{ vm.data.students.boys }} boys · {{ vm.data.students.girls }} girls</div>
+      </div>
+      <div class="stat" ng-class="{good: vm.data.attendance.percentage >= 85, attn: vm.data.attendance.percentage < 85 && vm.data.attendance.marked}">
+        <div class="val">{{ vm.data.attendance.marked ? (vm.data.attendance.percentage | pct) : '—' }}</div>
+        <div class="lbl">Present today</div>
+        <div class="sub" ng-if="vm.data.attendance.marked">{{ vm.data.attendance.absent }} absent out of {{ vm.data.attendance.marked }}</div>
+        <div class="sub" ng-if="!vm.data.attendance.marked">Attendance not marked yet</div>
+      </div>
+      <div class="stat good">
+        <div class="val">{{ vm.data.fees.today | rupee }}</div>
+        <div class="lbl">Collected today</div>
+        <div class="sub">{{ vm.data.fees.collected | rupee }} this session</div>
+      </div>
+      <div class="stat" ng-class="{attn: vm.data.fees.pending > 0}">
+        <div class="val">{{ vm.data.fees.pending | rupee }}</div>
+        <div class="lbl">Fees outstanding</div>
+        <div class="sub"><a href="#!/fees">Open the defaulter list</a></div>
+      </div>
+      <div class="stat">
+        <div class="val">{{ vm.data.students.new_30d }}</div>
+        <div class="lbl">Admissions, last 30 days</div>
+        <div class="sub">{{ vm.data.sms_this_month }} SMS sent this month</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header><h3>Fee collection, last six months</h3></header>
+      <div class="panel-body">
+        <div ng-if="!vm.data.collection_trend.length" class="muted">No payments recorded yet.</div>
+        <div ng-if="vm.data.collection_trend.length" style="display:flex; align-items:flex-end; gap:1.2rem; height:150px; padding-top:.5rem">
+          <div ng-repeat="t in vm.data.collection_trend" style="flex:1; text-align:center; display:flex; flex-direction:column; justify-content:flex-end; height:100%">
+            <div class="muted" style="font-size:.75rem">{{ t.amount | rupee }}</div>
+            <div style="background:var(--indigo); border-radius:2px 2px 0 0; margin-top:.3rem"
+                 ng-style="{height: vm.barHeight(t.amount) + '%'}"></div>
+            <div class="muted" style="font-size:.75rem; margin-top:.3rem">{{ t.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header><h3>Strength by class</h3></header>
+      <div class="table-scroll">
+        <table class="register">
+          <thead><tr><th>Class</th><th class="num">Students</th><th></th></tr></thead>
+          <tbody>
+            <tr ng-repeat="c in vm.data.classwise">
+              <td>{{ c.class_name }}</td>
+              <td class="num">{{ c.students }}</td>
+              <td style="width:50%">
+                <div ng-style="{width: (c.students * 6) + 'px', maxWidth:'100%'}"
+                     style="height:8px; background:var(--marigold); border-radius:2px"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

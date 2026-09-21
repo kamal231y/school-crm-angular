@@ -1,0 +1,96 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Attendance report</h1>
+      <p>Lowest attendance first, so the students who need a call are at the top.</p>
+    </div>
+    <button class="btn ghost no-print" ng-click="vm.print()">Print</button>
+  </div>
+
+  <div class="panel no-print">
+    <div class="panel-body">
+      <div class="filters">
+        <div class="field">
+          <label for="rc">Class</label>
+          <select id="rc" ng-model="vm.filters.class_id">
+            <option value="">All classes</option>
+            <option ng-repeat="c in vm.classes" value="{{c.id}}">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="field" ng-if="vm.tab == 'summary'">
+          <label for="rf">From</label>
+          <input id="rf" type="date" ng-model="vm.filters.from">
+        </div>
+        <div class="field" ng-if="vm.tab == 'summary'">
+          <label for="rt">To</label>
+          <input id="rt" type="date" ng-model="vm.filters.to">
+        </div>
+        <div class="field" ng-if="vm.tab == 'register'">
+          <label for="rm">Month</label>
+          <input id="rm" type="month" ng-model="vm.month">
+        </div>
+        <button class="btn" ng-click="vm.tab == 'summary' ? vm.loadSummary() : vm.loadRegister()">Run report</button>
+        <button class="btn ghost" ng-click="vm.tab = 'summary'; vm.loadSummary()" ng-if="vm.tab != 'summary'">Summary view</button>
+        <button class="btn ghost" ng-click="vm.tab = 'register'; vm.loadRegister()" ng-if="vm.tab != 'register'">Monthly register</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" ng-if="vm.loading">Working…</div>
+
+  <!-- Summary -->
+  <div class="panel" ng-if="vm.tab == 'summary' && !vm.loading">
+    <header><h3>{{ vm.filters.from | date:'dd MMM yyyy' }} to {{ vm.filters.to | date:'dd MMM yyyy' }}</h3></header>
+    <div class="table-scroll">
+      <table class="register">
+        <thead>
+          <tr>
+            <th class="roll">Roll</th><th>Student</th><th>Class</th>
+            <th class="num">Days</th><th class="num">Present</th><th class="num">Absent</th>
+            <th class="num">Late</th><th class="num">Leave</th><th class="num">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="r in vm.rows">
+            <td class="roll">{{ r.roll_no || '–' }}</td>
+            <td class="student-link">{{ r.name }}</td>
+            <td>{{ r.class_name }}</td>
+            <td class="num">{{ r.working_days }}</td>
+            <td class="num">{{ r.present || 0 }}</td>
+            <td class="num">{{ r.absent || 0 }}</td>
+            <td class="num">{{ r.late || 0 }}</td>
+            <td class="num">{{ r.on_leave || 0 }}</td>
+            <td class="num"><span class="tag" ng-class="r.percentage >= 75 ? 'present' : 'absent'">{{ r.percentage || 0 }}%</span></td>
+          </tr>
+          <tr class="empty" ng-if="!vm.rows.length"><td colspan="9">No attendance marked in this period.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Monthly register -->
+  <div class="panel" ng-if="vm.tab == 'register' && vm.register && !vm.loading">
+    <header>
+      <h3>Register for {{ vm.register.month }}</h3>
+      <span class="muted">P present · A absent · L late · H holiday</span>
+    </header>
+    <div class="table-scroll">
+      <table class="month-grid">
+        <thead>
+          <tr>
+            <th class="name">Student</th>
+            <th ng-repeat="d in vm.days">{{ d }}</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="s in vm.register.students">
+            <td class="name">{{ s.roll_no }} · {{ s.name }}</td>
+            <td ng-repeat="d in vm.days" ng-class="'d-' + (s.days[d] || '')">{{ vm.mark(s, d) }}</td>
+            <td><b>{{ s.percentage }}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

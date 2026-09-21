@@ -1,0 +1,211 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Fees</h1>
+      <p>Collect a payment, raise an invoice, or see who is overdue.</p>
+    </div>
+    <button class="btn" ng-if="vm.canPost" ng-click="vm.openInvoice()">Raise invoice</button>
+  </div>
+
+  <div class="stat-strip" ng-if="vm.summary">
+    <div class="stat"><div class="val">{{ vm.summary.billed | rupee }}</div><div class="lbl">Billed</div></div>
+    <div class="stat good"><div class="val">{{ vm.summary.collected | rupee }}</div><div class="lbl">Collected</div></div>
+    <div class="stat" ng-class="{attn: vm.summary.pending > 0}"><div class="val">{{ vm.summary.pending | rupee }}</div><div class="lbl">Pending</div></div>
+  </div>
+
+  <div class="panel">
+    <header>
+      <div style="display:flex; gap:.5rem">
+        <button class="btn sm" ng-class="{ghost: vm.tab != 'invoices'}" ng-click="vm.switchTab('invoices')">Invoices</button>
+        <button class="btn sm" ng-class="{ghost: vm.tab != 'defaulters'}" ng-click="vm.switchTab('defaulters')">Overdue</button>
+      </div>
+    </header>
+
+    <div class="panel-body" ng-if="vm.tab == 'invoices'">
+      <div class="filters">
+        <div class="field">
+          <label for="fst">Status</label>
+          <select id="fst" ng-model="vm.filters.status" ng-change="vm.load()">
+            <option value="">All</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partly paid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fcl">Class</label>
+          <select id="fcl" ng-model="vm.filters.class_id" ng-change="vm.load()">
+            <option value="">All classes</option>
+            <option ng-repeat="c in vm.classes" value="{{c.id}}">{{ c.label }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading" ng-if="vm.loading">Loading…</div>
+
+    <!-- Invoices -->
+    <div class="table-scroll" ng-if="vm.tab == 'invoices' && !vm.loading">
+      <table class="register">
+        <thead>
+          <tr>
+            <th>Invoice</th><th>Student</th><th>Class</th><th>Fee head</th><th>Period</th>
+            <th>Due date</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Balance</th>
+            <th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="i in vm.invoices">
+            <td class="muted">{{ i.invoice_no }}</td>
+            <td class="student-link"><a href="#!/students/{{i.student_id}}">{{ i.student_name }}</a></td>
+            <td>{{ i.class_name }}</td>
+            <td>{{ i.title }}</td>
+            <td>{{ i.period }}</td>
+            <td ng-style="{color: (i.status != 'paid' && i.due_date < vm.todayStr) ? 'var(--brick)' : ''}">
+              {{ i.due_date | date:'dd MMM yyyy' }}
+            </td>
+            <td class="num">{{ i.amount | rupee }}</td>
+            <td class="num">{{ i.paid_amount | rupee }}</td>
+            <td class="num">{{ i.balance | rupee }}</td>
+            <td><span class="tag" ng-class="i.status">{{ i.status }}</span></td>
+            <td>
+              <button class="btn sm" ng-if="vm.canPost && i.status != 'paid' && i.status != 'cancelled'"
+                      ng-click="vm.openPay(i)">Collect</button>
+            </td>
+          </tr>
+          <tr class="empty" ng-if="!vm.invoices.length"><td colspan="11">No invoices match these filters.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Defaulters -->
+    <div class="table-scroll" ng-if="vm.tab == 'defaulters' && !vm.loading">
+      <table class="register">
+        <thead>
+          <tr><th>Student</th><th>Class</th><th>Father</th><th>Phone</th>
+              <th class="num">Invoices</th><th>Oldest due</th><th class="num">Amount due</th></tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="d in vm.defaulters">
+            <td class="student-link"><a href="#!/students/{{d.id}}">{{ d.student_name }}</a></td>
+            <td>{{ d.class_name }}</td>
+            <td>{{ d.father_name }}</td>
+            <td>{{ d.guardian_phone }}</td>
+            <td class="num">{{ d.invoice_count }}</td>
+            <td>{{ d.oldest_due | date:'dd MMM yyyy' }}</td>
+            <td class="num"><b>{{ d.due_amount | rupee }}</b></td>
+          </tr>
+          <tr class="empty" ng-if="!vm.defaulters.length"><td colspan="7">Nothing overdue. Every invoice is paid or still within its due date.</td></tr>
+        </tbody>
+      </table>
+      <div class="panel-body" ng-if="vm.defaulters.length">
+        <a class="btn ghost" href="#!/sms">Send a reminder SMS to all overdue guardians</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Collect payment -->
+<div class="modal-backdrop" ng-if="vm.pay">
+  <div class="modal">
+    <header>
+      <h3>Collect payment</h3>
+      <button class="btn-link" ng-click="vm.closePay()">Close</button>
+    </header>
+    <div class="modal-body">
+      <p class="muted">
+        {{ vm.pay._invoice.student_name }} · {{ vm.pay._invoice.title }} ·
+        balance {{ vm.pay._invoice.balance | rupee }}
+      </p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="pa">Amount</label>
+          <input id="pa" type="number" step="0.01" ng-model="vm.pay.amount" ng-class="{err: vm.payErrors.amount}">
+          <span class="err-text" ng-if="vm.payErrors.amount">{{ vm.payErrors.amount }}</span>
+        </div>
+        <div class="field">
+          <label for="pm">Mode</label>
+          <select id="pm" ng-model="vm.pay.mode">
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="cheque">Cheque</option>
+            <option value="card">Card</option>
+            <option value="netbanking">Net banking</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pd">Paid on</label>
+          <input id="pd" type="date" ng-model="vm.pay.paid_on">
+        </div>
+        <div class="field">
+          <label for="pr">Reference</label>
+          <input id="pr" type="text" ng-model="vm.pay.txn_ref" placeholder="UPI / cheque number">
+        </div>
+        <div class="field wide">
+          <label style="display:flex; align-items:center; gap:.4rem; font-weight:400">
+            <input type="checkbox" ng-model="vm.pay.send_sms" style="width:auto">
+            Text the receipt to the guardian
+          </label>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <button class="btn ghost" ng-click="vm.closePay()">Cancel</button>
+      <button class="btn" ng-click="vm.submitPay()" ng-disabled="vm.payBusy">
+        {{ vm.payBusy ? 'Saving…' : 'Record payment' }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- New invoice -->
+<div class="modal-backdrop" ng-if="vm.newInvoice">
+  <div class="modal">
+    <header>
+      <h3>Raise an invoice</h3>
+      <button class="btn-link" ng-click="vm.closeInvoice()">Close</button>
+    </header>
+    <div class="modal-body">
+      <div class="field">
+        <label for="si">Student</label>
+        <input id="si" type="search" ng-model="vm.studentQuery" ng-change="vm.searchStudent()"
+               ng-model-options="{debounce: 300}" placeholder="Type a name or admission number">
+        <div ng-if="vm.studentResults.length" style="border:1px solid var(--rule); border-radius:3px; margin-top:.3rem">
+          <button type="button" class="btn-link" style="display:block; padding:.4rem .6rem; width:100%; text-align:left; text-decoration:none"
+                  ng-repeat="s in vm.studentResults" ng-click="vm.pickStudent(s)">
+            {{ s.first_name }} {{ s.last_name }} — {{ s.admission_no }} — {{ s.class_name }}
+          </button>
+        </div>
+        <span class="err-text" ng-if="vm.invErrors.student_id">{{ vm.invErrors.student_id }}</span>
+      </div>
+      <div class="form-grid" style="margin-top:.8rem">
+        <div class="field">
+          <label for="it">Fee head</label>
+          <input id="it" type="text" ng-model="vm.newInvoice.title" placeholder="Tuition Fee">
+          <span class="err-text" ng-if="vm.invErrors.title">{{ vm.invErrors.title }}</span>
+        </div>
+        <div class="field">
+          <label for="ip">Period</label>
+          <input id="ip" type="text" ng-model="vm.newInvoice.period">
+        </div>
+        <div class="field">
+          <label for="ia">Amount</label>
+          <input id="ia" type="number" step="0.01" ng-model="vm.newInvoice.amount">
+          <span class="err-text" ng-if="vm.invErrors.amount">{{ vm.invErrors.amount }}</span>
+        </div>
+        <div class="field">
+          <label for="idis">Discount</label>
+          <input id="idis" type="number" step="0.01" ng-model="vm.newInvoice.discount">
+        </div>
+        <div class="field">
+          <label for="idd">Due date</label>
+          <input id="idd" type="date" ng-model="vm.newInvoice.due_date">
+        </div>
+      </div>
+    </div>
+    <footer>
+      <button class="btn ghost" ng-click="vm.closeInvoice()">Cancel</button>
+      <button class="btn" ng-click="vm.submitInvoice()" ng-disabled="vm.invBusy">Create invoice</button>
+    </footer>
+  </div>
+</div>

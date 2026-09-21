@@ -1,0 +1,110 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>SMS to parents</h1>
+      <p>Messages go to the guardian mobile on each student record.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <header>
+      <div style="display:flex; gap:.5rem">
+        <button class="btn sm" ng-class="{ghost: vm.tab != 'compose'}" ng-click="vm.switchTab('compose')">Compose</button>
+        <button class="btn sm" ng-class="{ghost: vm.tab != 'log'}" ng-click="vm.switchTab('log')">Sent log</button>
+        <button class="btn sm" ng-if="vm.isAdmin" ng-class="{ghost: vm.tab != 'templates'}" ng-click="vm.switchTab('templates')">Templates</button>
+      </div>
+    </header>
+
+    <!-- Compose -->
+    <div class="panel-body" ng-if="vm.tab == 'compose'">
+      <div class="form-grid">
+        <div class="field">
+          <label for="au">Send to</label>
+          <select id="au" ng-model="vm.compose.audience">
+            <option value="class">Everyone in a class</option>
+            <option value="selected">Selected students</option>
+            <option value="defaulters">All guardians with overdue fees</option>
+          </select>
+        </div>
+        <div class="field" ng-if="vm.compose.audience == 'class'">
+          <label for="ac2">Class</label>
+          <select id="ac2" ng-model="vm.compose.class_id" ng-options="c.id as c.label for c in vm.classes">
+            <option value="">Choose a class</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field" ng-if="vm.compose.audience == 'selected'" style="margin-top:.9rem">
+        <label for="ss">Find students</label>
+        <input id="ss" type="search" ng-model="vm.query" ng-change="vm.searchStudents()"
+               ng-model-options="{debounce: 300}" placeholder="Name or admission number">
+        <div ng-if="vm.results.length" style="border:1px solid var(--rule); border-radius:3px; margin-top:.3rem">
+          <button type="button" class="btn-link" style="display:block; padding:.4rem .6rem; width:100%; text-align:left; text-decoration:none"
+                  ng-repeat="s in vm.results" ng-click="vm.addStudent(s)">
+            {{ s.first_name }} {{ s.last_name }} — {{ s.admission_no }} — {{ s.class_name }}
+          </button>
+        </div>
+        <div style="margin-top:.6rem; display:flex; flex-wrap:wrap; gap:.4rem">
+          <span class="tag active" ng-repeat="p in vm.picked">
+            {{ p.first_name }} {{ p.last_name }}
+            <button class="btn-link" style="color:inherit" ng-click="vm.removeStudent($index)">×</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:.9rem">
+        <label for="msg">Message</label>
+        <textarea id="msg" ng-model="vm.compose.message" rows="4"
+                  placeholder="Dear parent, the school will remain closed on Friday for Diwali."></textarea>
+        <span class="hint">
+          {{ vm.chars() }} characters · {{ vm.parts() }} SMS part(s).
+          You can use <code>{name}</code> and <code>{father}</code> and they'll be filled in per student.
+        </span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn" ng-click="vm.send()" ng-disabled="vm.busy || !vm.compose.message">
+          {{ vm.busy ? 'Sending…' : 'Send messages' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div ng-if="vm.tab == 'log'">
+      <div class="loading" ng-if="vm.loading">Loading the log…</div>
+      <div class="table-scroll" ng-if="!vm.loading">
+        <table class="register">
+          <thead><tr><th>Sent</th><th>Student</th><th>Mobile</th><th>Message</th><th>Type</th><th>Status</th><th>Sent by</th></tr></thead>
+          <tbody>
+            <tr ng-repeat="l in vm.logs">
+              <td style="white-space:nowrap">{{ l.created_at | date:'dd MMM, HH:mm' }}</td>
+              <td>{{ l.student_name || '—' }}</td>
+              <td>{{ l.mobile }}</td>
+              <td>{{ l.message }}</td>
+              <td class="muted">{{ l.template || 'manual' }}</td>
+              <td><span class="tag" ng-class="l.status">{{ l.status }}</span></td>
+              <td class="muted">{{ l.sent_by_name || 'system' }}</td>
+            </tr>
+            <tr class="empty" ng-if="!vm.logs.length"><td colspan="7">No messages sent yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <div class="panel-body" ng-if="vm.tab == 'templates'">
+      <p class="muted">These go out automatically — on admission, on an absence, on a fee payment, and when results are published.</p>
+      <div ng-repeat="t in vm.templates" style="padding:.9rem 0; border-bottom:1px solid var(--rule-soft)">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem">
+          <h3 style="margin:0">{{ t.title }}</h3>
+          <label style="font-size:.85rem; display:flex; gap:.35rem; align-items:center">
+            <input type="checkbox" ng-model="t.active" ng-true-value="1" ng-false-value="0" style="width:auto">
+            Active
+          </label>
+        </div>
+        <textarea ng-model="t.body" rows="2" style="margin-top:.4rem"></textarea>
+        <button class="btn sm ghost" style="margin-top:.4rem" ng-click="vm.saveTemplate(t)">Save template</button>
+      </div>
+    </div>
+  </div>
+</div>

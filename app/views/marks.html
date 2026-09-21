@@ -1,0 +1,53 @@
+<div class="page">
+  <div class="loading" ng-if="vm.loading">Loading the marks sheet…</div>
+  <div class="alert error" ng-if="vm.error">{{ vm.error }}</div>
+
+  <div ng-if="vm.exam">
+    <div class="page-head">
+      <div>
+        <h1>{{ vm.exam.name }}</h1>
+        <p>{{ vm.exam.class_name }} · {{ vm.exam.exam_date | date:'dd MMM yyyy' }} · out of {{ vm.maxTotal() }} marks</p>
+      </div>
+      <div style="display:flex; gap:.5rem">
+        <button class="btn ghost" ng-click="vm.back()">Back to exams</button>
+        <button class="btn" ng-click="vm.save()" ng-disabled="vm.busy || vm.hasErrors()">
+          {{ vm.busy ? 'Saving…' : 'Save marks' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="alert error" ng-if="vm.hasErrors()">
+      Some marks are outside the allowed range for their subject. Fix the highlighted cells to save.
+    </div>
+
+    <div class="panel">
+      <div class="table-scroll">
+        <table class="register">
+          <thead>
+            <tr>
+              <th class="roll">Roll</th>
+              <th>Student</th>
+              <th ng-repeat="sub in vm.subjects" class="num">{{ sub.name }}<div class="muted" style="font-weight:400">/{{ sub.max_marks }}</div></th>
+              <th class="num">Total</th>
+              <th class="num">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="st in vm.students">
+              <td class="roll">{{ st.roll_no || '–' }}</td>
+              <td class="student-link">{{ st.name }}</td>
+              <td ng-repeat="sub in vm.subjects" class="num" style="width:90px">
+                <input type="number" min="0" max="{{sub.max_marks}}" step="0.5"
+                       ng-model="st.marks[sub.id]" ng-class="{err: vm.overMax(st, sub)}"
+                       style="text-align:right">
+              </td>
+              <td class="num"><b>{{ vm.total(st) }}</b></td>
+              <td class="num">{{ vm.percentage(st) }}%</td>
+            </tr>
+            <tr class="empty" ng-if="!vm.students.length"><td colspan="8">No students on roll in this class.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
